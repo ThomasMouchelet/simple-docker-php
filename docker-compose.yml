@@ -1,0 +1,40 @@
+version: '3.7'
+volumes: 
+  db-data:
+services:
+    php8:
+        container_name: docker_php
+        build: php
+        ports:
+            - "9000:8000"
+        volumes:
+            - ./project:/var/www/project
+        depends_on:
+          database:
+            condition: service_started
+        restart: on-failure
+
+    database:
+      container_name: docker_database
+      image: mysql:8.0
+      # command: --default-authentication-plugin=mysql_native_password
+      environment:
+        MYSQL_ROOT_PASSWORD: docker_root
+        MYSQL_DATABASE: mysql_db_name
+        MYSQL_USER: docker_root
+        MYSQL_PASSWORD: docker_root
+      ports:
+        - 3306
+      volumes:
+        - db-data:/var/lib/mysql
+
+    phpmyadmin:
+      container_name: docker_phpmyadmin
+      depends_on: 
+        - database
+      image: phpmyadmin
+      restart: always
+      ports:
+        - 8080:80
+      environment:
+        PMA_HOST: database
